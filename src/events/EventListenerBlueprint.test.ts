@@ -2,7 +2,7 @@ import { typedGlobalEventListener, typedGuildEventListener } from "./EventListen
 import { BasePluginType } from "../plugins/pluginTypes";
 import { expect } from "chai";
 import { GuildMessage } from "../types";
-import { Channel, GuildChannel, Message, PartialDMChannel } from "discord.js";
+import { Channel, DMChannel, Message, NonThreadGuildBasedChannel, Typing } from "discord.js";
 
 type AssertEquals<TActual, TExpected> = TActual extends TExpected ? true : false;
 
@@ -35,7 +35,10 @@ describe("typedGuildEventListener() helper", () => {
       listener({ args }) {
         // Test type inference
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const result: AssertEquals<typeof args, { oldChannel: GuildChannel; newChannel: GuildChannel }> = true;
+        const result: AssertEquals<
+          typeof args,
+          { oldChannel: DMChannel | NonThreadGuildBasedChannel; newChannel: DMChannel | NonThreadGuildBasedChannel }
+        > = true;
       },
     });
 
@@ -44,7 +47,7 @@ describe("typedGuildEventListener() helper", () => {
       listener({ args }) {
         // Test type inference
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const result: AssertEquals<typeof args, { channel: GuildChannel }> = true;
+        const result: AssertEquals<typeof args, { typing: Typing }> = true;
       },
     });
   });
@@ -106,7 +109,7 @@ describe("typedGlobalEventListener() helper", () => {
       listener({ args }) {
         // Test type inference
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
-        const result: AssertEquals<typeof args, { channel: Channel | PartialDMChannel }> = true;
+        const result: AssertEquals<typeof args, { typing: Typing }> = true;
       },
     });
   });

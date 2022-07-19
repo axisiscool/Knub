@@ -1,4 +1,4 @@
-import { Client, Guild, Snowflake } from "discord.js";
+import { Client, Events, Guild, Snowflake } from "discord.js";
 import { EventEmitter } from "events";
 import { BaseConfig } from "./config/configTypes";
 import { get } from "./utils";
@@ -43,7 +43,7 @@ import { GuildPluginEventManager } from "./events/GuildPluginEventManager";
 import { EventRelay } from "./events/EventRelay";
 import { GlobalPluginEventManager } from "./events/GlobalPluginEventManager";
 import { Queue } from "./Queue";
-import { GatewayGuildCreateDispatchData } from "discord-api-types";
+import { GatewayDispatchEvents, GatewayGuildCreateDispatchData } from "discord-api-types/v10";
 import { performance } from "perf_hooks";
 import { Profiler } from "./Profiler";
 
@@ -168,12 +168,12 @@ export class Knub<
       this.log("info", "Still connecting...");
     }, 30 * 1000);
 
-    this.client.once("shardReady", () => {
+    this.client.once(Events.ShardReady, () => {
       clearInterval(loadErrorInterval);
       this.log("info", "Bot connected!");
     });
 
-    this.client.once("ready", async () => {
+    this.client.once(Events.ClientReady, async () => {
       this.log("info", "Received READY");
       this.log("info", "- Loading global plugins...");
 
@@ -186,19 +186,19 @@ export class Knub<
       this.emit("loadingFinished");
     });
 
-    this.client.ws.on("GUILD_CREATE", (data: GatewayGuildCreateDispatchData) => {
+    this.client.ws.on(GatewayDispatchEvents.GuildCreate, (data: GatewayGuildCreateDispatchData) => {
       setImmediate(() => {
         this.log("info", `Guild available: ${data.id}`);
         void this.loadGuild(data.id);
       });
     });
 
-    this.client.on("guildUnavailable", (guild: Guild) => {
+    this.client.on(Events.GuildUnavailable, (guild: Guild) => {
       this.log("info", `Guild unavailable: ${guild.id}`);
       void this.unloadGuild(guild.id);
     });
 
-    this.client.on("guildDelete", (guild: Guild) => {
+    this.client.on(Events.GuildDelete, (guild: Guild) => {
       this.log("info", `Left guild: ${guild.id}`);
       void this.unloadGuild(guild.id);
     });
@@ -533,7 +533,7 @@ export class Knub<
 
       try {
         await plugin.beforeLoad?.(preloadPluginData);
-      } catch (e) {
+      } catch (e: any) {
         throw new PluginLoadError(plugin.name, ctx, e);
       }
 
@@ -559,7 +559,7 @@ export class Knub<
         }
 
         // Initialize messageCreate event listener for commands
-        fullPluginData.events.on("messageCreate", ({ args: { message }, pluginData: _pluginData }) => {
+        fullPluginData.events.on(Events.MessageCreate, ({ args: { message }, pluginData: _pluginData }) => {
           return _pluginData.commands.runFromMessage(message);
         });
       }
@@ -650,7 +650,7 @@ export class Knub<
 
       try {
         await plugin.beforeLoad?.(beforeLoadPluginData);
-      } catch (e) {
+      } catch (e: any) {
         throw new PluginLoadError(plugin.name, ctx, e);
       }
 
@@ -675,7 +675,7 @@ export class Knub<
       }
 
       // Initialize message event listener for commands
-      fullPluginData.events.on("messageCreate", ({ args: { message }, pluginData: _pluginData }) => {
+      fullPluginData.events.on(Events.MessageCreate, ({ args: { message }, pluginData: _pluginData }) => {
         return _pluginData.commands.runFromMessage(message);
       });
 

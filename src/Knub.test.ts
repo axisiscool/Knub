@@ -14,6 +14,7 @@ import { expect } from "chai";
 import { typedGuildEventListener } from "./events/EventListenerBlueprint";
 import _domain from "domain";
 import { typedGuildCommand } from "./commands/CommandBlueprint";
+import { Events, GatewayDispatchEvents } from "discord.js";
 
 describe("Knub", () => {
   it("Multiple GUILD_CREATE events load guild's plugins only once", async () => {
@@ -43,18 +44,22 @@ describe("Knub", () => {
     });
 
     knub.initialize();
-    client.emit("connect");
-    client.emit("ready", client);
+    client.emit(Events.ClientReady, client);
     await sleep(30);
 
     const guild = createMockGuild(client);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(10);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(10);
-    client.ws.emit("GUILD_CREATE", guild);
-    client.ws.emit("GUILD_CREATE", guild);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(10);
     assert(loadedTimes === 1);
   });
@@ -86,13 +91,13 @@ describe("Knub", () => {
     });
 
     knub.initialize();
-    client.emit("connect");
     await sleep(50);
 
     const guild = createMockGuild(client);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(50);
-    client.emit("ready", client);
+    client.emit(Events.ClientReady, client);
     await sleep(50);
     assert(loadedTimes === 1);
   });
@@ -136,17 +141,21 @@ describe("Knub", () => {
     const guild = createMockGuild(client);
 
     knub.initialize();
-    client.emit("connect");
-    client.emit("ready", client);
+    client.emit(Events.ClientReady, client);
     await sleep(30);
 
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(10);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(10);
-    client.ws.emit("GUILD_CREATE", guild);
-    client.ws.emit("GUILD_CREATE", guild);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(10);
 
     expect(knub.getLoadedGuild(guild.id)).to.equal(undefined);
@@ -174,12 +183,12 @@ describe("Knub", () => {
     });
 
     knub.initialize();
-    client.emit("connect");
-    client.emit("ready", client);
+    client.emit(Events.ClientReady, client);
     await sleep(20);
 
     const guild = createMockGuild(client);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(20);
 
     expect(Object.keys(knub.profiler.getData())).to.include("load-plugin:plugin-to-load");
@@ -212,12 +221,12 @@ describe("Knub", () => {
     });
 
     knub.initialize();
-    client.emit("connect");
-    client.emit("ready", client);
+    client.emit(Events.ClientReady, client);
     await sleep(20);
 
     const guild = createMockGuild(client);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(20);
 
     const channel = createMockTextChannel(client, guild.id);
@@ -262,18 +271,18 @@ describe("Knub", () => {
     });
 
     knub.initialize();
-    client.emit("connect");
-    client.emit("ready", client);
+    client.emit(Events.ClientReady, client);
     await sleep(20);
 
     const guild = createMockGuild(client);
-    client.ws.emit("GUILD_CREATE", guild);
+    // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+    client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
     await sleep(20);
 
     const channel = createMockTextChannel(client, guild.id);
     const user = createMockUser(client);
     const message = createMockMessage(client, channel, user, { content: "!foo" });
-    client.emit("messageCreate", message);
+    client.emit(Events.MessageCreate, message);
     await sleep(20);
 
     expect(Object.keys(knub.profiler.getData())).to.include("command:foo");

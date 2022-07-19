@@ -5,7 +5,7 @@
 import { get } from "./utils";
 import { GuildPluginData } from "./plugins/PluginData";
 import { getMemberLevel as _getMemberLevel } from "./plugins/pluginUtils";
-import { Client, GuildMember, Invite, Message, TextBasedChannelFields, TextChannel } from "discord.js";
+import { Client, Events, GuildMember, Invite, Message, TextBasedChannelFields, TextChannel } from "discord.js";
 
 /**
  * Splits a string into chunks, preferring to split at newlines if possible
@@ -105,7 +105,7 @@ export function waitForReply(
       resolve(null);
     }, timeout);
 
-    client.on("message", (msg) => {
+    client.on(Events.MessageCreate, (msg) => {
       if (!msg.channel || msg.channel.id !== channel.id) return;
       if (msg.author && msg.author.id === client.user!.id) return;
       if (restrictToUserId && (!msg.author || msg.author.id !== restrictToUserId)) return;

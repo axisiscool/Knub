@@ -1,4 +1,4 @@
-import { EventArguments, ExtendedClientEvents, fromDjsArgs, GuildEvent, isGuildEvent, ValidEvent } from "./eventTypes";
+import { EventArguments, fromDjsArgs, GuildEvent, isGuildEvent, ValidEvent } from "./eventTypes";
 import { eventToGuild } from "./eventUtils";
 import { Client, ClientEvents } from "discord.js";
 import { Profiler } from "../Profiler";
@@ -71,7 +71,7 @@ export class EventRelay {
     });
   }
 
-  protected relayEvent(ev: ValidEvent, args: ExtendedClientEvents[ValidEvent]): void {
+  protected relayEvent(ev: ValidEvent, args: ClientEvents[ValidEvent]): void {
     // eslint-disable-next-line @typescript-eslint/no-unsafe-call,@typescript-eslint/no-unsafe-assignment
     const convertedArgs = (fromDjsArgs[ev] as any)?.(...args);
 

@@ -1,5 +1,16 @@
 import { KnownEvents } from "./eventTypes";
-import { Channel, Guild, GuildChannel, Message, PartialDMChannel, PartialUser, TextChannel, User } from "discord.js";
+import {
+  Channel,
+  Guild,
+  GuildChannel,
+  InteractionType,
+  Message,
+  PartialDMChannel,
+  PartialUser,
+  TextChannel,
+  ThreadChannel,
+  User,
+} from "discord.js";
 
 type EventToGuild = {
   [P in keyof KnownEvents]?: (args: KnownEvents[P]) => Guild | undefined;
@@ -10,7 +21,7 @@ type EventToUser = {
 };
 
 type EventToChannel = {
-  [P in keyof KnownEvents]?: (args: KnownEvents[P]) => Channel | PartialDMChannel | undefined;
+  [P in keyof KnownEvents]?: (args: KnownEvents[P]) => Channel | ThreadChannel | PartialDMChannel | undefined;
 };
 
 type EventToMessage = {
@@ -41,7 +52,7 @@ export const eventToGuild: EventToGuild = {
   messageReactionRemoveAll: ({ message }) => (message.channel as TextChannel)?.guild,
   messageUpdate: ({ newMessage }) => (newMessage.channel as TextChannel).guild,
   presenceUpdate: ({ newPresence }) => newPresence.member?.guild,
-  typingStart: ({ channel }) => (channel as TextChannel)?.guild,
+  typingStart: ({ typing }) => typing.guild ?? undefined,
   voiceStateUpdate: ({ oldState, newState }) => newState?.guild ?? oldState?.guild,
   interactionCreate: ({ interaction }) => interaction.guild ?? undefined,
   threadCreate: ({ thread }) => thread.guild,
@@ -50,8 +61,8 @@ export const eventToGuild: EventToGuild = {
   threadListSync: ({ threads }) => threads.first()?.guild ?? undefined,
   threadMemberUpdate: ({ oldMember, newMember }) =>
     newMember.guildMember?.guild ?? oldMember.guildMember?.guild ?? undefined,
-  threadMembersUpdate: ({ oldMembers, newMembers }) =>
-    newMembers.first()?.guildMember?.guild ?? oldMembers.first()?.guildMember?.guild ?? undefined,
+  threadMembersUpdate: ({ addedMembers, removedMembers }) =>
+    addedMembers.first()?.guildMember?.guild ?? removedMembers.first()?.guildMember?.guild ?? undefined,
   stageInstanceCreate: ({ stageInstance }) => stageInstance.guild ?? undefined,
   stageInstanceDelete: ({ stageInstance }) => stageInstance.guild ?? undefined,
   stageInstanceUpdate: ({ oldStageInstance, newStageInstance }) =>
@@ -75,7 +86,7 @@ export const eventToUser: EventToUser = {
   messageReactionAdd: ({ user }) => user,
   messageUpdate: ({ newMessage }) => newMessage.author ?? undefined,
   presenceUpdate: ({ newPresence }) => newPresence.user ?? undefined,
-  typingStart: ({ user }) => user,
+  typingStart: ({ typing }) => typing.user,
   userUpdate: ({ newUser }) => newUser,
   voiceStateUpdate: ({ newState }) => newState.member?.user,
   interactionCreate: ({ interaction }) => interaction.user ?? undefined,
@@ -92,14 +103,14 @@ export const eventToChannel: EventToChannel = {
   channelCreate: ({ channel }) => channel,
   channelDelete: ({ channel }) => channel,
   channelUpdate: ({ newChannel }) => newChannel,
-  typingStart: ({ channel }) => channel,
+  typingStart: ({ typing }) => typing.channel,
   voiceStateUpdate: ({ oldState, newState }) => newState?.channel ?? oldState?.channel ?? undefined,
   interactionCreate: ({ interaction }) => interaction.channel ?? undefined,
   threadCreate: ({ thread }) => thread,
   threadDelete: ({ thread }) => thread,
   threadUpdate: ({ oldThread, newThread }) => newThread ?? oldThread,
-  threadMembersUpdate: ({ oldMembers, newMembers }) =>
-    newMembers.first()?.thread ?? oldMembers.first()?.thread ?? undefined,
+  threadMembersUpdate: ({ addedMembers, removedMembers }) =>
+    addedMembers.first()?.thread ?? removedMembers.first()?.thread ?? undefined,
   stageInstanceCreate: ({ stageInstance }) => stageInstance.channel ?? undefined,
   stageInstanceDelete: ({ stageInstance }) => stageInstance.channel ?? undefined,
   stageInstanceUpdate: ({ oldStageInstance, newStageInstance }) =>
@@ -118,5 +129,5 @@ export const eventToMessage: EventToMessage = {
   messageReactionRemoveAll: ({ message }) => (message instanceof Message ? message : undefined),
   messageUpdate: ({ newMessage }) => (newMessage instanceof Message ? newMessage : undefined),
   interactionCreate: ({ interaction }) =>
-    interaction.isMessageComponent() ? (interaction.message as Message) : undefined,
+    interaction.type === InteractionType.MessageComponent ? interaction.message : undefined,
 };

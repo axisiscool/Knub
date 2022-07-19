@@ -22,7 +22,7 @@ import { GuildPluginEventManager } from "../events/GuildPluginEventManager";
 import { GlobalPluginEventManager } from "../events/GlobalPluginEventManager";
 import { typedGlobalEventListener, typedGuildEventListener } from "../events/EventListenerBlueprint";
 import { typedGuildCommand } from "../commands/CommandBlueprint";
-import { TextChannel } from "discord.js";
+import { Events, GatewayDispatchEvents, TextChannel } from "discord.js";
 
 type AssertEquals<TActual, TExpected> = TActual extends TExpected ? true : false;
 
@@ -74,7 +74,9 @@ describe("PluginBlueprint", () => {
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -118,8 +120,10 @@ describe("PluginBlueprint", () => {
         client.emit("ready", client);
         await sleep(30);
 
-        client.ws.emit("GUILD_CREATE", guild0);
-        client.ws.emit("GUILD_CREATE", guild1);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild0);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild1);
         await sleep(30);
 
         const user0 = createMockUser(client);
@@ -132,10 +136,10 @@ describe("PluginBlueprint", () => {
         const guild1Message1 = createMockMessage(client, guild1Channel, user1, { content: "foo" });
         const guild1Message2 = createMockMessage(client, guild1Channel, user1, { content: "bar" });
 
-        client.emit("messageCreate", guild0Message1);
-        client.emit("messageCreate", guild0Message2);
-        client.emit("messageCreate", guild1Message1);
-        client.emit("messageCreate", guild1Message2);
+        client.emit(Events.MessageCreate, guild0Message1);
+        client.emit(Events.MessageCreate, guild0Message2);
+        client.emit(Events.MessageCreate, guild1Message1);
+        client.emit(Events.MessageCreate, guild1Message2);
         await sleep(30);
 
         assert.strictEqual(guildCounts[guild0.id], 2);
@@ -178,7 +182,8 @@ describe("PluginBlueprint", () => {
         await sleep(30);
 
         const guild0 = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild0);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild0);
         await sleep(30);
 
         const user = createMockUser(client);
@@ -212,12 +217,11 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const user = createMockUser(client);
-        client.emit("userUpdate", user, user);
+        client.emit(Events.UserUpdate, user, user);
       })();
     });
 
@@ -248,14 +252,13 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const user = createMockUser(client);
         const channel = createMockTextChannel(client, guild.id);
         const message = createMockMessage(client, channel, user);
-        client.emit("messageCreate", message);
+        client.emit(Events.MessageCreate, message);
       })();
     });
 
@@ -362,33 +365,34 @@ describe("PluginBlueprint", () => {
       client.emit("ready", client);
       await sleep(10);
 
-      client.ws.emit("GUILD_CREATE", guild);
+      // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+      client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       await sleep(10);
 
       const channel = createMockTextChannel(client, guild.id);
 
       // !info
       const infoFromUser1Msg = createMockMessage(client, channel, user1, { content: "!info" });
-      client.emit("messageCreate", infoFromUser1Msg);
+      client.emit(Events.MessageCreate, infoFromUser1Msg);
       await sleep(10);
       const infoFromUser2Msg = createMockMessage(client, channel, user2, { content: "!info" });
-      client.emit("messageCreate", infoFromUser2Msg);
+      client.emit(Events.MessageCreate, infoFromUser2Msg);
       await sleep(10);
 
       // !server
       const serverFromUser1Msg = createMockMessage(client, channel, user1, { content: "!server" });
-      client.emit("messageCreate", serverFromUser1Msg);
+      client.emit(Events.MessageCreate, serverFromUser1Msg);
       await sleep(10);
       const serverFromUser2Msg = createMockMessage(client, channel, user2, { content: "!server" });
-      client.emit("messageCreate", serverFromUser2Msg);
+      client.emit(Events.MessageCreate, serverFromUser2Msg);
       await sleep(10);
 
       // !ping
       const pingFromUser1Msg = createMockMessage(client, channel, user1, { content: "!ping" });
-      client.emit("messageCreate", pingFromUser1Msg);
+      client.emit(Events.MessageCreate, pingFromUser1Msg);
       await sleep(10);
       const pingFromUser3Msg = createMockMessage(client, channel, user3, { content: "!ping" });
-      client.emit("messageCreate", pingFromUser3Msg);
+      client.emit(Events.MessageCreate, pingFromUser3Msg);
       await sleep(10);
 
       assert.deepStrictEqual(infoCmdCallUsers, [user1.id]);
@@ -424,7 +428,8 @@ describe("PluginBlueprint", () => {
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -478,7 +483,8 @@ describe("PluginBlueprint", () => {
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -500,8 +506,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
       })();
     });
@@ -527,15 +532,15 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
 
         await sleep(30);
-        client.emit("guildUnavailable", guild);
+        client.emit(Events.GuildUnavailable, guild);
       })();
     });
 
@@ -557,8 +562,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         void knub.unloadGlobalContext();
@@ -586,15 +590,15 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
 
         await sleep(30);
-        client.emit("guildUnavailable", guild);
+        client.emit(Events.GuildUnavailable, guild);
       })();
     });
 
@@ -616,8 +620,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         void knub.unloadGlobalContext();
@@ -653,12 +656,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -688,8 +691,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
       })();
     });
@@ -723,12 +725,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
 
         await sleep(30);
         client.emit("guildUnavailable", guild);
@@ -761,8 +763,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         void knub.unloadGlobalContext();
@@ -794,12 +795,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -825,8 +826,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
       })();
     });
@@ -856,15 +856,15 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
 
         await sleep(30);
-        client.emit("guildUnavailable", guild);
+        client.emit(Events.GuildUnavailable, guild);
       })();
     });
 
@@ -890,8 +890,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         void knub.unloadGlobalContext();
@@ -950,12 +949,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
 
         await sleep(30);
         client.emit("guildUnavailable", guild);
@@ -1011,8 +1010,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         void knub.unloadGlobalContext();
@@ -1049,12 +1047,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -1093,12 +1091,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -1155,12 +1153,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -1194,12 +1192,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -1235,12 +1233,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
 
@@ -1281,12 +1279,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
       })();
     });
   });
@@ -1360,22 +1358,22 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
         await sleep(30);
 
         const channel = createMockTextChannel(client, guild.id);
 
         const message1 = createMockMessage(client, channel, user1, { content: "!foo" });
-        client.emit("messageCreate", message1);
+        client.emit(Events.MessageCreate, message1);
         await sleep(30);
 
         const message2 = createMockMessage(client, channel, user2, { content: "!foo" });
-        client.emit("messageCreate", message2);
+        client.emit(Events.MessageCreate, message2);
         await sleep(30);
 
         assert.equal(commandTriggers, 1);
@@ -1453,22 +1451,22 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
         await sleep(30);
 
         const channel = createMockTextChannel(client, guild.id);
 
         const message1 = createMockMessage(client, channel, user1, { content: "!foo" });
-        client.emit("messageCreate", message1);
+        client.emit(Events.MessageCreate, message1);
         await sleep(30);
 
         const message2 = createMockMessage(client, channel, user2, { content: "!foo" });
-        client.emit("messageCreate", message2);
+        client.emit(Events.MessageCreate, message2);
         await sleep(30);
 
         assert.equal(commandTriggers, 1);
@@ -1521,17 +1519,17 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
         await sleep(30);
 
         const channel = createMockTextChannel(client, guild.id);
         const user = createMockUser(client);
         const msg = createMockMessage(client, channel, user, { content: "!foo bar" });
-        client.emit("messageCreate", msg);
+        client.emit(Events.MessageCreate, msg);
       })();
     });
   });
@@ -1563,12 +1561,12 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
         await sleep(30);
       })();
     });
@@ -1596,8 +1594,7 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
       })();
     });
@@ -1630,26 +1627,26 @@ describe("PluginBlueprint", () => {
         });
 
         knub.initialize();
-        client.emit("connect");
-        client.emit("ready", client);
+        client.emit(Events.ClientReady, client);
         await sleep(30);
 
         const guild = createMockGuild(client);
-        client.ws.emit("GUILD_CREATE", guild);
+        // @ts-expect-error This isn't publicly exposed but WebSocketManager extends EventEmitter
+        client.ws.emit(GatewayDispatchEvents.GuildCreate, guild);
         await sleep(30);
 
         const textChannel = createMockTextChannel(client, guild.id);
         const author = createMockUser(client);
 
         const msg = createMockMessage(client, textChannel, author, { content: "hi!" });
-        client.emit("messageCreate", msg);
+        client.emit(Events.MessageCreate, msg);
         await sleep(30);
 
         client.emit("guildUnavailable", guild);
         await sleep(30);
 
         const msg2 = createMockMessage(client, textChannel, author, { content: "hi!" });
-        client.emit("messageCreate", msg2);
+        client.emit(Events.MessageCreate, msg2);
         await sleep(30);
 
         assert.strictEqual(msgEvFnCallNum, 1);

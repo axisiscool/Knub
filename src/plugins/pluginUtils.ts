@@ -7,12 +7,10 @@ import {
   ResolvedPluginBlueprintPublicInterface,
 } from "./PluginBlueprint";
 import path from "path";
-import _fs from "fs";
+import fs from "fs/promises";
 import { AnyContext, GlobalContext, GuildContext, GuildPluginMap } from "../types";
 import { KeyOfMap } from "../utils";
 import { Guild, GuildMember, PartialGuildMember, Snowflake } from "discord.js";
-
-const fs = _fs.promises;
 
 export function getMemberLevel(
   levels: PermissionLevels,

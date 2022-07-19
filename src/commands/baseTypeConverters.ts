@@ -8,7 +8,7 @@ import {
 } from "knub-command-manager";
 import { disableCodeBlocks } from "../helpers";
 import { getChannelId, getRoleId, getUserId } from "../utils";
-import { Channel, GuildMember, Role, TextChannel, ThreadChannel, User, VoiceChannel } from "discord.js";
+import { Channel, ChannelType, GuildMember, Role, TextChannel, ThreadChannel, User, VoiceChannel } from "discord.js";
 import { AnyPluginData } from "../plugins/PluginData";
 import { CommandContext } from "./commandUtils";
 
@@ -44,7 +44,7 @@ export const baseTypeConverters = {
   },
 
   member(value: string, { message, pluginData: { client } }: CommandContext<AnyPluginData<any>>): GuildMember {
-    if (message.channel.type === "DM") {
+    if (message.channel.isDMBased()) {
       throw new TypeConversionError(`Type 'Member' can only be used in guilds`);
     }
 
@@ -67,7 +67,7 @@ export const baseTypeConverters = {
   },
 
   channel(value: string, { message }: CommandContext<AnyPluginData<any>>): Channel {
-    if (message.channel.type === "DM") {
+    if (message.channel.isDMBased()) {
       throw new TypeConversionError(`Type 'Channel' can only be used in guilds`);
     }
 
@@ -86,7 +86,7 @@ export const baseTypeConverters = {
   },
 
   textChannel(value: string, { message }: CommandContext<AnyPluginData<any>>): TextChannel | ThreadChannel {
-    if (message.channel.type === "DM") {
+    if (message.channel.isDMBased()) {
       throw new TypeConversionError(`Type 'Channel' can only be used in guilds`);
     }
 
@@ -101,7 +101,7 @@ export const baseTypeConverters = {
       throw new TypeConversionError(`Could not find channel for channel id \`${channelId}\``);
     }
 
-    if (!channel.isText()) {
+    if (channel.type !== ChannelType.GuildText) {
       throw new TypeConversionError(`Channel \`${channel.name}\` is not a text channel`);
     }
 
@@ -109,7 +109,7 @@ export const baseTypeConverters = {
   },
 
   voiceChannel(value: string, { message }: CommandContext<AnyPluginData<any>>): VoiceChannel {
-    if (message.channel.type === "DM") {
+    if (message.channel.isDMBased()) {
       throw new TypeConversionError(`Type 'Channel' can only be used in guilds`);
     }
 
@@ -132,7 +132,7 @@ export const baseTypeConverters = {
   },
 
   role(value: string, { message }: CommandContext<AnyPluginData<any>>): Role {
-    if (message.channel.type === "DM") {
+    if (message.channel.isDMBased()) {
       throw new TypeConversionError(`Type 'Role' can only be used in guilds`);
     }
 
